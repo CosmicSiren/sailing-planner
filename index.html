@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+<title>Khushi Ke Dane 🌽 — Happy Kernels</title>
+<style>
+  :root{
+    --gold:#ffcb2b; --saffron:#ff7a18; --green:#1f8a4c; --ink:#2a1a07;
+  }
+  *{box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent;}
+  html,body{height:100%;}
+  body{
+    background:
+      radial-gradient(1200px 600px at 50% -10%, #ffd98a 0%, #ff9a4d 35%, #e2552b 70%, #7c1f12 100%);
+    font-family:"Trebuchet MS", "Segoe UI", system-ui, sans-serif;
+    color:#fff; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    min-height:100%; padding:12px; overflow:hidden;
+  }
+  #wrap{ width:100%; max-width:900px; }
+  #title{
+    text-align:center; margin-bottom:8px; text-shadow:0 2px 0 #8a2b0e, 0 0 18px rgba(255,180,60,.6);
+    line-height:1.05;
+  }
+  #title b{font-size:clamp(22px,5vw,38px); letter-spacing:1px;}
+  #title span{display:block; font-size:clamp(11px,2.6vw,15px); opacity:.92; font-weight:normal;}
+  #frame{
+    position:relative; width:100%; border-radius:14px; overflow:hidden;
+    border:4px solid #5b2a0c; box-shadow:0 16px 40px rgba(0,0,0,.45), inset 0 0 0 2px #ffd27a;
+    background:#9bd0ff; aspect-ratio:16/9;
+  }
+  canvas{display:block; width:100%; height:100%; image-rendering:pixelated; touch-action:none;}
+  /* overlay screens */
+  .screen{
+    position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    text-align:center; gap:14px; padding:18px;
+    background:linear-gradient(180deg, rgba(60,18,5,.78), rgba(20,6,2,.86));
+    backdrop-filter:blur(2px); z-index:5;
+  }
+  .screen.hidden{display:none;}
+  .screen h2{font-size:clamp(20px,5vw,34px); text-shadow:0 2px 0 #000;}
+  .screen p{max-width:560px; line-height:1.5; font-size:clamp(13px,2.6vw,16px); opacity:.95;}
+  .btn{
+    cursor:pointer; border:none; border-radius:999px; padding:13px 30px;
+    font-size:clamp(15px,3vw,19px); font-weight:bold; color:#3a1500;
+    background:linear-gradient(180deg,#ffe27a,#ffb02e); box-shadow:0 6px 0 #b3631a, 0 10px 18px rgba(0,0,0,.4);
+    transition:transform .06s, box-shadow .06s; letter-spacing:.5px;
+  }
+  .btn:active{transform:translateY(4px); box-shadow:0 2px 0 #b3631a, 0 4px 10px rgba(0,0,0,.4);}
+  .keys{font-size:13px; opacity:.85;}
+  .keys kbd{background:#fff2; border:1px solid #fff5; border-radius:5px; padding:2px 7px; margin:0 2px;}
+  /* touch controls */
+  #touch{position:absolute; inset:0; z-index:4; pointer-events:none;}
+  .pad{position:absolute; pointer-events:auto; width:64px; height:64px; border-radius:50%;
+    background:rgba(255,255,255,.18); border:2px solid rgba(255,255,255,.5);
+    display:flex; align-items:center; justify-content:center; font-size:26px; color:#fff;
+    user-select:none; backdrop-filter:blur(2px);}
+  .pad:active{background:rgba(255,255,255,.4);}
+  #pLeft{left:14px; bottom:16px;} #pRight{left:90px; bottom:16px;}
+  #pJump{right:16px; bottom:16px; width:78px; height:78px; font-size:15px; font-weight:bold;
+    background:rgba(255,176,46,.35); border-color:#ffd27a;}
+  @media (hover:hover) and (pointer:fine){ #touch{display:none;} }
+  #foot{margin-top:10px; font-size:12px; opacity:.8; text-align:center;}
+</style>
+</head>
+<body>
+<div id="wrap">
+  <div id="title">
+    <b>🌽 KHUSHI KE DANE 🌽</b>
+    <span>Help Chintu collect the Happy Kernels across the pind!</span>
+  </div>
+
+  <div id="frame">
+    <canvas id="game" width="640" height="360"></canvas>
+
+    <!-- touch controls -->
+    <div id="touch">
+      <div class="pad" id="pLeft">◀</div>
+      <div class="pad" id="pRight">▶</div>
+      <div class="pad" id="pJump">JUMP</div>
+    </div>
+
+    <!-- start screen -->
+    <div class="screen" id="startScreen">
+      <h2>🌽 Khushi Ke Dane 🌽</h2>
+      <p>Chintu is roaming the village fields to gather <b>Happy Kernels</b>! Hop on cheeky <b>bandars</b> (monkeys), grab golden <b>laddoos</b> for bonus, dodge the prickly cactus, and reach the <b>patang</b> (kite) at the end of each level.</p>
+      <p class="keys"><kbd>←</kbd> <kbd>→</kbd> or <kbd>A</kbd> <kbd>D</kbd> to move &nbsp;•&nbsp; <kbd>Space</kbd> / <kbd>↑</kbd> / <kbd>W</kbd> to jump &nbsp;•&nbsp; <kbd>P</kbd> pause</p>
+      <button class="btn" id="startBtn">▶ Chalo, Khelo!</button>
+    </div>
+
+    <!-- message screen (win/lose/level) -->
+    <div class="screen hidden" id="msgScreen">
+      <h2 id="msgTitle"></h2>
+      <p id="msgText"></p>
+      <button class="btn" id="msgBtn">Continue</button>
+    </div>
+  </div>
+
+  <div id="foot">Made with ❤️ &amp; masala — runs fully offline. Sound on by default; press <b>M</b> to mute.</div>
+</div>
+
+<script>
+"use strict";
+(() => {
+//==================================================================
+//  KHUSHI KE DANE — a desi platformer.  Single-file, no deps.
+//==================================================================
+const cvs = document.getElementById('game');
+const ctx = cvs.getContext('2d');
+const W = cvs.width, H = cvs.height;        // logical resolution (640x360)
+ctx.imageSmoothingEnabled = false;
+
+//------------------------------------------------- AUDIO (WebAudio)
+const Sound = (() => {
+  let ac=null, muted=false;
+  const ensure = () => { if(!ac){ try{ ac = new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} } if(ac && ac.state==='suspended') ac.resume(); };
+  function blip(freq, dur, type='square', vol=0.08, slide=0){
+    if(muted) return; ensure(); if(!ac) return;
+    const t=ac.currentTime, o=ac.createOscillator(), g=ac.createGain();
+    o.type=type; o.frequency.setValueAtTime(freq,t);
+    if(slide) o.frequency.exponentialRampToValueAtTime(Math.max(40,freq+slide), t+dur);
+    g.gain.setValueAtTime(vol,t); g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+    o.connect(g); g.connect(ac.destination); o.start(t); o.stop(t+dur);
+  }
+  return {
+    coin(){ blip(880,0.07,'square',0.07); blip(1320,0.09,'square',0.06); },
+    jump(){ blip(420,0.16,'square',0.08,520); },
+    stomp(){ blip(180,0.12,'square',0.10,-120); blip(90,0.16,'triangle',0.09,-40); },
+    laddoo(){ [660,880,1100,1320].forEach((f,i)=>setTimeout(()=>blip(f,0.1,'triangle',0.08),i*60)); },
+    hurt(){ blip(300,0.22,'sawtooth',0.10,-220); },
+    die(){ [440,330,260,160].forEach((f,i)=>setTimeout(()=>blip(f,0.18,'square',0.09),i*120)); },
+    win(){ [523,659,784,1046,1318].forEach((f,i)=>setTimeout(()=>blip(f,0.16,'triangle',0.09),i*110)); },
+    toggle(){ muted=!muted; return muted; },
+    kick(){ ensure(); }
+  };
+})();
+
+//------------------------------------------------- INPUT
+const keys = {left:false,right:false,jump:false,jumpPressed:false};
+const keyMap = {ArrowLeft:'left',KeyA:'left',ArrowRight:'right',KeyD:'right',
+                Space:'jump',ArrowUp:'jump',KeyW:'jump'};
+addEventListener('keydown', e=>{
+  if(e.code in keyMap){ if(keyMap[e.code]==='jump' && !keys.jump) keys.jumpPressed=true; keys[keyMap[e.code]]=true; e.preventDefault(); }
+  if(e.code==='KeyP') togglePause();
+  if(e.code==='KeyM') Sound.toggle();
+  if(e.code==='Enter' && state==='start') startGame();
+});
+addEventListener('keyup', e=>{ if(e.code in keyMap){ keys[keyMap[e.code]]=false; e.preventDefault(); } });
+// touch
+function bindPad(id, prop){
+  const el=document.getElementById(id);
+  const on=e=>{ e.preventDefault(); if(prop==='jump'&&!keys.jump) keys.jumpPressed=true; keys[prop]=true; Sound.kick(); };
+  const off=e=>{ e.preventDefault(); keys[prop]=false; };
+  el.addEventListener('touchstart',on,{passive:false}); el.addEventListener('touchend',off,{passive:false});
+  el.addEventListener('touchcancel',off,{passive:false});
+  el.addEventListener('mousedown',on); el.addEventListener('mouseup',off); el.addEventListener('mouseleave',off);
+}
+bindPad('pLeft','left'); bindPad('pRight','right'); bindPad('pJump','jump');
+
+//------------------------------------------------- WORLD / CONSTANTS
+const TILE=32, GRAV=0.62, MOVE=0.9, FRICT=0.80, MAXVX=4.2, JUMP=-12.2, MAXFALL=14;
+let camX=0, state='start', score=0, kernels=0, lives=3, levelIndex=0, animT=0, flashT=0, shakeT=0;
+
+// Level legend:
+//  X ground   B brick/platform   ? laddoo block   o kernel   m monkey   c cactus
+//  P player start   F flag(patang)   . empty
+const LEVELS = [
+{ name:"Pind ke Khet (Village Fields)",
+  rows:[
+"...............................................................................",
+"...............................................................................",
+"..........o.o..................o..o..o.........................................",
+".................?.........................o.o................o.o..............",
+"...............................BBB.........BBBB...............?................",
+"......o....................................................BBB.................",
+"....BBBB.........o..o..............o.....m.........o.o..........................",
+".............................c..............................m.....o.o.......F..",
+"P.....m...............c.....................c..........c.......................",
+"XXXXXXXXXXXXXX...XXXXXXXXXXXXXXXXXXXX...XXXXXXXXXXXXXXX...XXXXXXXXXXXXXXXXXXXXXXXX",
+"XXXXXXXXXXXXXX...XXXXXXXXXXXXXXXXXXXX...XXXXXXXXXXXXXXX...XXXXXXXXXXXXXXXXXXXXXXXX",
+] },
+{ name:"Jungle Safari",
+  rows:[
+"...................................................................................................",
+"............o..o.........................o.o.o.............................o.o..o.o................",
+".......?...............BBBB......?.................BBB..............?...............................",
+".....................................m...................m............................m...........",
+"..........BBB.................o.o..............BBBB..............o.o.......BBBB.....................",
+"....o.o.................c................c.............c.................c..................o.o....",
+"..BB......m.....c...........BB..........................BB.........c...........BB...........BB...F.",
+"P......................................................................................m...........",
+"XXXXXXXXXXX...XXXXXXXXXXXXX...XXXXXXXXXXXXXX...XXXXXXXXXX...XXXXXXXXXXXXXX...XXXXXXXXXXXXXXXXXXXXXXXXX",
+"XXXXXXXXXXX...XXXXXXXXXXXXX...XXXXXXXXXXXXXX...XXXXXXXXXX...XXXXXXXXXXXXXX...XXXXXXXXXXXXXXXXXXXXXXXXX",
+] },
+];
+
+let solids=[], bricks=[], coins=[], laddoos=[], monkeys=[], cacti=[], flag=null, player=null, levelW=0, levelH=0;
+
+function parseLevel(idx){
+  const rows = LEVELS[idx].rows;
+  levelH = rows.length*TILE; levelW = rows[0].length*TILE;
+  solids=[]; bricks=[]; coins=[]; laddoos=[]; monkeys=[]; cacti=[]; flag=null;
+  for(let r=0;r<rows.length;r++){
+    for(let c=0;c<rows[r].length;c++){
+      const ch=rows[r][c], x=c*TILE, y=r*TILE;
+      if(ch==='X'){ solids.push({x,y,w:TILE,h:TILE,t:'ground'}); }
+      else if(ch==='B'){ const b={x,y,w:TILE,h:TILE,t:'brick',bump:0}; solids.push(b); bricks.push(b); }
+      else if(ch==='?'){ const b={x,y,w:TILE,h:TILE,t:'q',bump:0,used:false}; solids.push(b); bricks.push(b); }
+      else if(ch==='o'){ coins.push({x:x+6,y:y+6,w:20,h:20,got:false,ph:Math.random()*6.28}); }
+      else if(ch==='m'){ monkeys.push(mkMonkey(x,y)); }
+      else if(ch==='c'){ cacti.push({x:x+6,y:y+2,w:20,h:30}); }
+      else if(ch==='F'){ flag={x:x+TILE/2,y:y-TILE, base:y+TILE}; }
+      else if(ch==='P'){ player=mkPlayer(x,y); }
+    }
+  }
+  if(!player) player=mkPlayer(TILE,TILE);
+  camX=0;
+}
+function mkPlayer(x,y){ return {x,y,w:22,h:30,vx:0,vy:0,onGround:false,face:1,coyote:0,inv:0,walk:0,dead:false}; }
+function mkMonkey(x,y){ return {x:x+5,y:y+2,w:24,h:26,vx:(Math.random()<.5?-1:1)*0.9,vy:0,alive:true,squash:0,t:Math.random()*6}; }
+
+//------------------------------------------------- COLLISION HELPERS
+function aabb(a,b){ return a.x<b.x+b.w && a.x+a.w>b.x && a.y<b.y+b.h && a.y+a.h>b.y; }
+
+function moveAndCollide(e){
+  // horizontal
+  e.x += e.vx;
+  for(const s of solids){
+    if(aabb(e,s)){
+      if(e.vx>0) e.x = s.x - e.w;
+      else if(e.vx<0) e.x = s.x + s.w;
+      e.vx = 0;
+    }
+  }
+  // vertical
+  e.y += e.vy; e.onGround=false;
+  for(const s of solids){
+    if(aabb(e,s)){
+      if(e.vy>0){ e.y = s.y - e.h; e.vy=0; e.onGround=true; }
+      else if(e.vy<0){
+        e.y = s.y + s.h; e.vy=0;
+        if(e===player && (s.t==='brick'||s.t==='q')) hitBlock(s);
+      }
+    }
+  }
+}
+
+function hitBlock(b){
+  b.bump=8;
+  if(b.t==='q' && !b.used){
+    b.used=true; b.t='brickUsed';
+    // pop a laddoo above
+    laddoos.push({x:b.x+4,y:b.y-TILE+4,w:24,h:24,vy:-3,active:true,rise:18,ph:0});
+    Sound.coin();
+  } else if(b.t==='brick'){ Sound.coin(); }
+}
+
+//------------------------------------------------- UPDATE
+function update(){
+  animT++;
+  if(flashT>0) flashT--;
+  if(shakeT>0) shakeT--;
+  const p=player;
+  if(p.dead){ // death fall animation
+    p.vy=Math.min(p.vy+GRAV,MAXFALL); p.y+=p.vy;
+    if(p.y>levelH+200){ respawn(); }
+    return;
+  }
+
+  // horizontal input
+  if(keys.left){ p.vx-=MOVE; p.face=-1; }
+  if(keys.right){ p.vx+=MOVE; p.face=1; }
+  if(!keys.left && !keys.right) p.vx*=FRICT;
+  p.vx=Math.max(-MAXVX,Math.min(MAXVX,p.vx));
+  if(Math.abs(p.vx)<0.05) p.vx=0;
+
+  // jump w/ coyote time
+  if(p.onGround) p.coyote=6; else if(p.coyote>0) p.coyote--;
+  if(keys.jumpPressed && p.coyote>0){ p.vy=JUMP; p.coyote=0; p.onGround=false; Sound.jump(); }
+  if(!keys.jump && p.vy<-4) p.vy=-4;       // variable jump height
+  keys.jumpPressed=false;
+
+  p.vy=Math.min(p.vy+GRAV,MAXFALL);
+  moveAndCollide(p);
+  if(Math.abs(p.vx)>0.4 && p.onGround) p.walk+=0.25;
+  if(p.inv>0) p.inv--;
+
+  // fell off world
+  if(p.y>levelH+60){ loseLife(); return; }
+
+  // bricks bump decay
+  for(const b of bricks) if(b.bump>0) b.bump-=1;
+
+  // coins
+  for(const co of coins){ if(!co.got && aabb(p,co)){ co.got=true; kernels++; score+=100; Sound.coin();
+    if(kernels%25===0) lives++; } }
+
+  // laddoos
+  for(const l of laddoos){
+    if(!l.active) continue;
+    if(l.rise>0){ l.y+=l.vy; l.rise--; if(l.rise===0) l.vy=0; }
+    l.ph=(l.ph||0)+0.1;
+    if(aabb(p,l)){ l.active=false; score+=500; Sound.laddoo(); flashT=10; }
+  }
+
+  // monkeys
+  for(const m of monkeys){
+    if(!m.alive){ if(m.squash>0) m.squash--; continue; }
+    m.t+=0.1;
+    m.vy=Math.min(m.vy+GRAV,MAXFALL);
+    // patrol: turn at edges/walls
+    const prevx=m.x;
+    m.x+=m.vx;
+    for(const s of solids){ if(aabb(m,s)){ if(m.vx>0)m.x=s.x-m.w; else m.x=s.x+s.w; m.vx*=-1; } }
+    m.y+=m.vy; let grounded=false;
+    for(const s of solids){ if(aabb(m,s)){ if(m.vy>0){m.y=s.y-m.h; m.vy=0; grounded=true;} else {m.y=s.y+s.h; m.vy=0;} } }
+    // ledge detection: if grounded and no ground ahead, flip
+    if(grounded){
+      const ahead={x:m.x+(m.vx>0?m.w+1:-1),y:m.y+m.h+2,w:1,h:1};
+      let support=false; for(const s of solids){ if(aabb(ahead,s)){support=true;break;} }
+      if(!support) m.vx*=-1;
+    }
+    // collide with player
+    if(p.inv===0 && aabb(p,m)){
+      if(p.vy>1 && p.y+p.h - m.y < 16){ // stomp
+        m.alive=false; m.squash=24; p.vy=JUMP*0.7; score+=200; Sound.stomp(); shakeT=6;
+      } else { hurt(); }
+    }
+  }
+
+  // cactus
+  for(const c of cacti){ if(p.inv===0 && aabb(p,c)) hurt(); }
+
+  // flag / win
+  if(flag && p.x+p.w > flag.x-12 && p.x < flag.x+12 && p.y < flag.base){
+    winLevel();
+  }
+
+  // camera
+  const target = p.x - W*0.4;
+  camX += (target - camX)*0.12;
+  camX = Math.max(0, Math.min(camX, levelW - W));
+}
+
+function hurt(){
+  if(player.inv>0) return;
+  player.inv=90; flashT=8; shakeT=10; Sound.hurt();
+  player.vy=-6; player.vx = player.face*-3;
+  loseLife(true);
+}
+function loseLife(soft){
+  lives--;
+  if(lives<=0){ gameOver(); return; }
+  if(!soft){ player.dead=true; Sound.die(); }
+}
+function respawn(){
+  // reset player to start of current level (keep score), reset enemies
+  const start = LEVELS[levelIndex].rows;
+  let sx=TILE, sy=TILE;
+  for(let r=0;r<start.length;r++) for(let c=0;c<start[r].length;c++) if(start[r][c]==='P'){sx=c*TILE;sy=r*TILE;}
+  player=mkPlayer(sx,sy); player.inv=60; camX=0;
+}
+
+//------------------------------------------------- DRAW
+function rrect(x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
+
+function drawBackground(){
+  // sky gradient by level
+  const sky=ctx.createLinearGradient(0,0,0,H);
+  if(levelIndex===0){ sky.addColorStop(0,'#ffe7a8'); sky.addColorStop(.5,'#ffb14d'); sky.addColorStop(1,'#ff7a3d'); }
+  else { sky.addColorStop(0,'#bfe9ff'); sky.addColorStop(.6,'#9ad6a0'); sky.addColorStop(1,'#5aa35a'); }
+  ctx.fillStyle=sky; ctx.fillRect(0,0,W,H);
+
+  // sun
+  const sx = 90 - camX*0.05, sy=70;
+  ctx.fillStyle = levelIndex===0 ? '#fff3c4' : '#fffae0';
+  ctx.globalAlpha=0.9; ctx.beginPath(); ctx.arc(sx,sy,38,0,7); ctx.fill(); ctx.globalAlpha=1;
+
+  // far hills (parallax 0.3)
+  const off3 = -camX*0.3;
+  ctx.fillStyle = levelIndex===0 ? '#d8743a' : '#3f7d45';
+  for(let i=-1;i<8;i++){ const bx=off3 + i*180; ctx.beginPath(); ctx.moveTo(bx,H-120); ctx.quadraticCurveTo(bx+90,H-220,bx+180,H-120); ctx.fill(); }
+  // mid trees (parallax 0.55)
+  const off2=-camX*0.55;
+  for(let i=-1;i<14;i++){ drawTree(off2 + i*150 + ((i*53)%40), H-150 - ((i*37)%30), levelIndex===0); }
+  // ground band haze
+  ctx.fillStyle='rgba(60,30,10,0.10)'; ctx.fillRect(0,H-120,W,120);
+}
+function drawTree(x,y,palm){
+  if(x<-80||x>W+80) return;
+  // trunk
+  ctx.fillStyle='#6b3f1d'; ctx.fillRect(x-4,y,8,80);
+  if(palm){ // neem-ish round canopy
+    ctx.fillStyle='#2f7a3a'; ctx.beginPath(); ctx.arc(x,y-6,26,0,7); ctx.fill();
+    ctx.fillStyle='#3c9a4a'; ctx.beginPath(); ctx.arc(x-14,y+4,18,0,7); ctx.arc(x+14,y+4,18,0,7); ctx.fill();
+  } else { // jungle palm fronds
+    ctx.strokeStyle='#2f7a3a'; ctx.lineWidth=6; ctx.lineCap='round';
+    for(let a=-2;a<=2;a++){ ctx.beginPath(); ctx.moveTo(x,y); ctx.quadraticCurveTo(x+a*22,y-30,x+a*40,y-6); ctx.stroke(); }
+    ctx.lineWidth=1;
+  }
+}
+
+function drawTile(s){
+  const x=s.x-camX, y=s.y;
+  if(x<-TILE||x>W) return;
+  if(s.t==='ground'){
+    // soil with grass top + rangoli dots
+    ctx.fillStyle = levelIndex===0 ? '#7a4a1e' : '#5b3a18'; ctx.fillRect(x,y,TILE,TILE);
+    ctx.fillStyle = levelIndex===0 ? '#3aa55a' : '#46b35a'; ctx.fillRect(x,y,TILE,7);
+    ctx.fillStyle='rgba(0,0,0,.12)'; ctx.fillRect(x,y+7,TILE,2);
+    ctx.fillStyle='rgba(255,255,255,.08)'; ctx.fillRect(x+4,y+12,4,4); ctx.fillRect(x+20,y+20,4,4);
+  } else {
+    const by = (s.bump>0? -s.bump:0);
+    if(s.t==='q'){ // mystery laddoo block
+      ctx.fillStyle='#e98a1e'; rrect(x+1,y+by+1,TILE-2,TILE-2,5); ctx.fill();
+      ctx.fillStyle='#b3600f'; ctx.fillRect(x+1,y+by+1,TILE-2,3);
+      ctx.fillStyle='#fff2c0'; ctx.font='bold 18px Trebuchet MS'; ctx.textAlign='center'; ctx.fillText('?',x+TILE/2,y+by+22);
+    } else if(s.t==='brickUsed'){
+      ctx.fillStyle='#7a4a1e'; rrect(x+1,y+1,TILE-2,TILE-2,4); ctx.fill();
+    } else { // brick
+      ctx.fillStyle='#c0622c'; rrect(x+1,y+by+1,TILE-2,TILE-2,4); ctx.fill();
+      ctx.strokeStyle='rgba(0,0,0,.25)'; ctx.lineWidth=2;
+      ctx.beginPath(); ctx.moveTo(x+1,y+by+TILE/2); ctx.lineTo(x+TILE-1,y+by+TILE/2);
+      ctx.moveTo(x+TILE/2,y+by+1); ctx.lineTo(x+TILE/2,y+by+TILE/2); ctx.stroke(); ctx.lineWidth=1;
+    }
+  }
+}
+
+function drawKernel(co){
+  if(co.got) return;
+  const x=co.x-camX, y=co.y + Math.sin(animT*0.08+co.ph)*3;
+  if(x<-30||x>W) return;
+  // smiling corn kernel
+  ctx.save(); ctx.translate(x+10,y+10);
+  ctx.fillStyle='#ffd23b'; ctx.strokeStyle='#c9971a'; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.ellipse(0,0,9,11,0,0,7); ctx.fill(); ctx.stroke();
+  ctx.fillStyle='#fff6c8'; ctx.beginPath(); ctx.ellipse(-3,-3,3,4,0,0,7); ctx.fill();
+  // face
+  ctx.fillStyle='#7a4a00'; ctx.beginPath(); ctx.arc(-3,1,1.3,0,7); ctx.arc(3,1,1.3,0,7); ctx.fill();
+  ctx.strokeStyle='#7a4a00'; ctx.lineWidth=1.4; ctx.beginPath(); ctx.arc(0,3,3,0.15*Math.PI,0.85*Math.PI); ctx.stroke();
+  ctx.restore();
+}
+
+function drawLaddoo(l){
+  if(!l.active) return;
+  const x=l.x-camX, y=l.y + (l.rise<=0?Math.sin(animT*0.08)*2:0);
+  if(x<-30||x>W) return;
+  ctx.save(); ctx.translate(x+12,y+12);
+  ctx.fillStyle='#e8a13a'; ctx.beginPath(); ctx.arc(0,0,11,0,7); ctx.fill();
+  // boondi texture
+  ctx.fillStyle='#f2bf63'; for(let i=0;i<8;i++){ const a=i/8*6.28; ctx.beginPath(); ctx.arc(Math.cos(a)*5,Math.sin(a)*5,2.2,0,7); ctx.fill(); }
+  ctx.fillStyle='#d98a26'; ctx.beginPath(); ctx.arc(3,3,2.5,0,7); ctx.fill();
+  ctx.restore();
+}
+
+function drawCactus(c){
+  const x=c.x-camX, y=c.y;
+  if(x<-30||x>W) return;
+  ctx.fillStyle='#2f8f4a'; rrect(x+6,y,8,c.h,4); ctx.fill();
+  rrect(x,y+8,8,4,2); ctx.fill(); rrect(x,y+4,4,12,2); ctx.fill();
+  rrect(x+12,y+14,8,4,2); ctx.fill(); rrect(x+16,y+8,4,12,2); ctx.fill();
+  ctx.strokeStyle='#1c5e30'; ctx.lineWidth=1;
+  for(let i=0;i<5;i++){ ctx.beginPath(); ctx.moveTo(x+6,y+4+i*6); ctx.lineTo(x+4,y+2+i*6); ctx.stroke(); }
+}
+
+function drawMonkey(m){
+  const x=m.x-camX, y=m.y;
+  if(x<-40||x>W) return;
+  if(!m.alive){
+    if(m.squash<=0) return;
+    ctx.fillStyle='#8a5a2b'; ctx.globalAlpha=m.squash/24;
+    rrect(x,y+m.h-6,m.w,6,3); ctx.fill(); ctx.globalAlpha=1; return;
+  }
+  const bob=Math.sin(m.t*2)*1.5;
+  ctx.save(); ctx.translate(x+m.w/2,y+bob);
+  // body
+  ctx.fillStyle='#8a5a2b'; ctx.beginPath(); ctx.ellipse(0,8,11,12,0,0,7); ctx.fill();
+  ctx.fillStyle='#d8b07a'; ctx.beginPath(); ctx.ellipse(0,11,6,8,0,0,7); ctx.fill();
+  // head
+  ctx.fillStyle='#8a5a2b'; ctx.beginPath(); ctx.arc(0,-6,9,0,7); ctx.fill();
+  ctx.fillStyle='#6b421d'; ctx.beginPath(); ctx.arc(-9,-8,4,0,7); ctx.arc(9,-8,4,0,7); ctx.fill();
+  ctx.fillStyle='#e8cda0'; ctx.beginPath(); ctx.arc(0,-3,6,0,7); ctx.fill();
+  // eyes
+  ctx.fillStyle='#1a1a1a'; ctx.beginPath(); ctx.arc(-3,-7,1.6,0,7); ctx.arc(3,-7,1.6,0,7); ctx.fill();
+  ctx.restore();
+}
+
+function drawFlag(){
+  if(!flag) return;
+  const x=flag.x-camX;
+  if(x<-60||x>W+60) return;
+  // pole
+  ctx.fillStyle='#5b3a18'; ctx.fillRect(x-2,flag.base-160,4,160);
+  ctx.fillStyle='#ffd23b'; ctx.beginPath(); ctx.arc(x,flag.base-160,5,0,7); ctx.fill();
+  // patang (kite) as the goal banner
+  const ky=flag.base-150 + Math.sin(animT*0.05)*4;
+  ctx.save(); ctx.translate(x+26,ky);
+  ctx.rotate(Math.sin(animT*0.04)*0.12);
+  const cols=['#ff4d4d','#ffd23b','#2f8f4a','#3a7bd5'];
+  ctx.fillStyle=cols[0]; ctx.beginPath(); ctx.moveTo(0,-16); ctx.lineTo(16,0); ctx.lineTo(0,16); ctx.lineTo(-16,0); ctx.closePath(); ctx.fill();
+  ctx.fillStyle=cols[1]; ctx.beginPath(); ctx.moveTo(0,-16); ctx.lineTo(0,16); ctx.lineTo(-16,0); ctx.closePath(); ctx.fill();
+  ctx.fillStyle=cols[2]; ctx.beginPath(); ctx.moveTo(0,-16); ctx.lineTo(16,0); ctx.lineTo(0,0); ctx.closePath(); ctx.fill();
+  // tail
+  ctx.strokeStyle='#fff'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(0,16);
+  for(let i=1;i<=5;i++) ctx.lineTo(Math.sin(animT*0.1+i)*6, 16+i*8); ctx.stroke();
+  ctx.restore();
+  // string from pole top to kite
+  ctx.strokeStyle='rgba(255,255,255,.6)'; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(x,flag.base-158); ctx.lineTo(x+26,ky); ctx.stroke();
+}
+
+function drawPlayer(){
+  const p=player;
+  if(p.inv>0 && Math.floor(animT/4)%2===0 && !p.dead) return; // blink while invincible
+  const x=p.x-camX, y=p.y;
+  ctx.save(); ctx.translate(x+p.w/2, y);
+  ctx.scale(p.face,1);
+  const run = p.onGround && Math.abs(p.vx)>0.4;
+  const legSwing = run ? Math.sin(p.walk)*5 : 0;
+  const air = !p.onGround;
+  // legs (pyjama)
+  ctx.fillStyle='#3a4a7a';
+  ctx.fillRect(-7, 22, 5, 8 + (air?2:legSwing>0?legSwing:0));
+  ctx.fillRect( 2, 22, 5, 8 + (air?2:legSwing<0?-legSwing:0));
+  // shoes
+  ctx.fillStyle='#2a1a07'; ctx.fillRect(-8,28+(air?2:0),7,3); ctx.fillRect(2,28+(air?2:0),7,3);
+  // kurta body
+  ctx.fillStyle='#ff7a18'; rrect(-9,8,18,16,4); ctx.fill();
+  ctx.fillStyle='#ffd23b'; ctx.fillRect(-1,9,2,14); // placket
+  // arms
+  ctx.fillStyle='#ff7a18';
+  ctx.fillRect(-11,10, 4, 9 + (run?Math.sin(p.walk+3)*3:0));
+  ctx.fillRect( 7,10, 4, 9 + (run?Math.sin(p.walk)*3:0));
+  // hands
+  ctx.fillStyle='#c98a5a'; ctx.fillRect(-11,18,4,3); ctx.fillRect(7,18,4,3);
+  // head
+  ctx.fillStyle='#d49a63'; ctx.beginPath(); ctx.arc(0,2,8,0,7); ctx.fill();
+  // hair
+  ctx.fillStyle='#1a1208'; ctx.beginPath(); ctx.arc(0,-1,8,Math.PI,0); ctx.fill(); ctx.fillRect(-8,-1,16,3);
+  // eye + smile
+  ctx.fillStyle='#1a1208'; ctx.beginPath(); ctx.arc(3,3,1.4,0,7); ctx.fill();
+  ctx.strokeStyle='#7a3b1a'; ctx.lineWidth=1.2; ctx.beginPath(); ctx.arc(3,5,2.5,0.1*Math.PI,0.6*Math.PI); ctx.stroke();
+  // tilak
+  ctx.fillStyle='#c0392b'; ctx.beginPath(); ctx.arc(0,0,1.3,0,7); ctx.fill();
+  ctx.restore();
+}
+
+function drawHUD(){
+  ctx.save();
+  // panel
+  ctx.fillStyle='rgba(40,16,4,0.55)'; rrect(8,8,200,30,8); ctx.fill();
+  ctx.textAlign='left'; ctx.font='bold 15px Trebuchet MS';
+  // kernel icon
+  ctx.fillStyle='#ffd23b'; ctx.beginPath(); ctx.ellipse(26,23,7,9,0,0,7); ctx.fill();
+  ctx.fillStyle='#fff'; ctx.fillText('× '+kernels, 36,28);
+  // lives (hearts)
+  ctx.fillStyle='#fff'; ctx.fillText('Score '+score, 92,28);
+  // hearts top-right
+  for(let i=0;i<lives;i++){ heart(W-22-i*22, 22, 8, '#ff5577'); }
+  // level label
+  ctx.textAlign='center'; ctx.fillStyle='rgba(255,255,255,.9)'; ctx.font='12px Trebuchet MS';
+  ctx.fillText('Level '+(levelIndex+1)+': '+LEVELS[levelIndex].name, W/2, 18);
+  ctx.restore();
+}
+function heart(cx,cy,s,col){
+  ctx.fillStyle=col; ctx.beginPath();
+  ctx.moveTo(cx,cy+s*0.6);
+  ctx.bezierCurveTo(cx-s,cy-s*0.3,cx-s*0.5,cy-s,cx,cy-s*0.3);
+  ctx.bezierCurveTo(cx+s*0.5,cy-s,cx+s,cy-s*0.3,cx,cy+s*0.6);
+  ctx.fill();
+}
+
+function render(){
+  ctx.setTransform(1,0,0,1,0,0);
+  // screen shake
+  let sx=0,sy=0; if(shakeT>0){ sx=(Math.random()-.5)*shakeT; sy=(Math.random()-.5)*shakeT; }
+  ctx.save(); ctx.translate(sx,sy);
+  drawBackground();
+  solids.forEach(drawTile);
+  coins.forEach(drawKernel);
+  laddoos.forEach(drawLaddoo);
+  cacti.forEach(drawCactus);
+  drawFlag();
+  monkeys.forEach(drawMonkey);
+  drawPlayer();
+  ctx.restore();
+  drawHUD();
+  // pickup flash
+  if(flashT>0){ ctx.fillStyle='rgba(255,255,210,'+(flashT/30)+')'; ctx.fillRect(0,0,W,H); }
+  if(state==='paused'){ ctx.fillStyle='rgba(0,0,0,.5)'; ctx.fillRect(0,0,W,H);
+    ctx.fillStyle='#fff'; ctx.textAlign='center'; ctx.font='bold 26px Trebuchet MS'; ctx.fillText('⏸ Ruko (Paused)',W/2,H/2);
+    ctx.font='14px Trebuchet MS'; ctx.fillText('Press P to resume',W/2,H/2+26); }
+}
+
+//------------------------------------------------- GAME STATE FLOW
+const startScreen=document.getElementById('startScreen');
+const msgScreen=document.getElementById('msgScreen');
+const msgTitle=document.getElementById('msgTitle');
+const msgText=document.getElementById('msgText');
+const msgBtn=document.getElementById('msgBtn');
+
+function startGame(){
+  Sound.kick();
+  score=0; kernels=0; lives=3; levelIndex=0;
+  parseLevel(0);
+  startScreen.classList.add('hidden'); msgScreen.classList.add('hidden');
+  state='play';
+}
+function winLevel(){
+  Sound.win(); state='msg';
+  if(levelIndex < LEVELS.length-1){
+    showMsg('🎉 Shabash!', 'Level '+(levelIndex+1)+' cleared! You gathered '+kernels+' Happy Kernels so far. Aage badho!','Next Level ➜', ()=>{
+      levelIndex++; parseLevel(levelIndex); state='play'; msgScreen.classList.add('hidden');
+    });
+  } else {
+    showMsg('🏆 Jeet Gaye!', 'You finished all levels with '+kernels+' Happy Kernels and a score of '+score+'! Chintu is one happy kid. 🌽🎆','Play Again', ()=>{
+      startGame();
+    });
+  }
+}
+function gameOver(){
+  Sound.die(); state='msg';
+  showMsg('😵 Arre Yaar!', 'Game over — you collected '+kernels+' kernels and scored '+score+'. Koi baat nahi, try again!','Restart', ()=>{ startGame(); });
+}
+function showMsg(title,text,btn,cb){
+  msgTitle.textContent=title; msgText.textContent=text; msgBtn.textContent=btn;
+  msgScreen.classList.remove('hidden');
+  msgBtn.onclick=()=>{ Sound.kick(); cb(); };
+}
+function togglePause(){ if(state==='play') state='paused'; else if(state==='paused') state='play'; }
+
+document.getElementById('startBtn').onclick=startGame;
+
+//------------------------------------------------- MAIN LOOP (fixed step)
+let last=performance.now(), acc=0; const STEP=1000/60;
+function loop(now){
+  acc += Math.min(now-last, 100); last=now;
+  while(acc>=STEP){ if(state==='play') update(); acc-=STEP; }
+  if(state!=='start') render();
+  requestAnimationFrame(loop);
+}
+// prime a first render of the start level behind the screen
+parseLevel(0); render();
+requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>

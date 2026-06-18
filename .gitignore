@@ -1,0 +1,16 @@
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+*.swp
+
+# Claude Code / local tooling
+.claude/
+
+# Python
+__pycache__/
+*.pyc
+
+# Loose lane source files dropped into the repo folder.
+# The canonical data is embedded in shipment-dashboard.html via embed-data.py;
+# keep raw source JSON out of git unless you intentionally add it.
+*.json

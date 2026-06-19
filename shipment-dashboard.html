@@ -6,20 +6,20 @@
 <title>Sailing Planner — Route &amp; Prediction Dashboard</title>
 <style>
   :root{
-    --bg:#0c1018; --bg2:#121826; --panel:#161d2e; --panel2:#1b2336;
-    --line:#26304a; --line2:#313c5c;
-    --txt:#e8edf7; --mut:#9aa6c0; --mut2:#6b7793;
-    --accent:#5b9bff; --accent2:#7c5cff;
-    --green:#34d399; --greenbg:#0e3a2c;
-    --red:#fb7185; --redbg:#43182a;
-    --amber:#fbbf24; --amberbg:#3a2e0e;
-    --shadow:0 8px 30px rgba(0,0,0,.35);
-    --r:14px;
+    --bg:#09090b; --bg2:#0c0c0e; --panel:#101012; --panel2:#18181b;
+    --line:#27272a; --line2:#3f3f46;
+    --txt:#fafafa; --mut:#a1a1aa; --mut2:#71717a;
+    --accent:#3b82f6; --accent2:#3b82f6;
+    --green:#34d399; --greenbg:#0e2a20;
+    --red:#fb7185; --redbg:#3a1620;
+    --amber:#fbbf24; --amberbg:#332710;
+    --shadow:0 4px 16px rgba(0,0,0,.4);
+    --r:10px;
   }
   *{box-sizing:border-box}
   html,body{margin:0;height:100%}
   body{
-    background:radial-gradient(1200px 700px at 80% -10%, #16213b 0%, var(--bg) 55%) fixed;
+    background:var(--bg);
     color:var(--txt); font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
     -webkit-font-smoothing:antialiased;
   }
@@ -27,28 +27,29 @@
   .wrap{max-width:1320px;margin:0 auto;padding:22px 22px 90px}
   header.app{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:14px}
   .logo{display:flex;align-items:center;gap:11px}
-  .logo .mark{width:38px;height:38px;border-radius:11px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:grid;place-items:center;font-size:20px;box-shadow:var(--shadow)}
+  .logo .mark{width:38px;height:38px;border-radius:9px;background:var(--panel2);border:1px solid var(--line);display:grid;place-items:center;font-size:20px}
   .logo h1{font-size:17px;margin:0;letter-spacing:.2px}
   .logo p{margin:0;color:var(--mut);font-size:12px}
   .spacer{flex:1}
   .btn{appearance:none;border:1px solid var(--line2);background:var(--panel2);color:var(--txt);
     padding:9px 14px;border-radius:10px;cursor:pointer;font-size:13px;font-weight:600;transition:.15s;display:inline-flex;gap:8px;align-items:center}
-  .btn:hover{border-color:var(--accent);background:#1f2942}
-  .btn.primary{background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;color:#fff}
+  .btn:hover{border-color:var(--accent);background:#202024}
+  .btn.primary{background:var(--accent);border:1px solid var(--accent);color:#fff}
+  .btn.primary:hover{background:#2f74e8;border-color:#2f74e8}
   .btn.ghost{background:transparent}
 
   /* View switcher */
   .views{display:flex;gap:6px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:5px;margin-bottom:16px;width:fit-content}
   .views button{border:none;background:transparent;color:var(--mut);padding:9px 16px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:650;display:flex;gap:8px;align-items:center;transition:.15s}
   .views button:hover{color:var(--txt)}
-  .views button.on{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff}
+  .views button.on{background:var(--panel2);color:var(--txt);box-shadow:inset 0 0 0 1px var(--line)}
   .views button .cnt{font-size:11px;background:rgba(255,255,255,.18);padding:1px 7px;border-radius:999px}
 
   /* Lane tabs */
   .lanes{display:flex;gap:8px;flex-wrap:wrap;margin:2px 0 18px}
   .lane{padding:9px 13px;border:1px solid var(--line);border-radius:11px;background:var(--panel);cursor:pointer;transition:.15s;min-width:150px}
   .lane:hover{border-color:var(--line2)}
-  .lane.active{border-color:var(--accent);background:#19233b;box-shadow:0 0 0 1px var(--accent) inset}
+  .lane.active{border-color:var(--accent);background:#1c1c1f;box-shadow:0 0 0 1px var(--accent) inset}
   .lane .route{font-weight:700;font-size:13px;display:flex;align-items:center;gap:6px}
   .lane .sub{color:var(--mut);font-size:11px;margin-top:2px}
   .lane .pillrow{display:flex;gap:5px;margin-top:7px}
@@ -84,7 +85,7 @@
   .b-green{background:var(--greenbg);color:var(--green)}
   .b-red{background:var(--redbg);color:var(--red)}
   .b-amber{background:var(--amberbg);color:var(--amber)}
-  .b-grey{background:#1f2740;color:var(--mut)}
+  .b-grey{background:#27272a;color:var(--mut)}
   .dot{width:7px;height:7px;border-radius:50%}
   .scac{font-weight:700;letter-spacing:.5px}
   .mono{font-variant-numeric:tabular-nums}
@@ -97,10 +98,10 @@
   .tbl th.sorted .ar{opacity:1;color:var(--accent)}
   .tbl td{padding:10px;border-bottom:1px solid var(--line);vertical-align:middle}
   .tbl tr.row{cursor:pointer;transition:.1s}
-  .tbl tr.row:hover{background:#19233b}
-  .tbl tr.row.sel{background:#1c2742;box-shadow:inset 3px 0 0 var(--accent)}
-  .rank{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:7px;background:#1f2740;color:var(--mut);font-weight:700;font-size:12px}
-  .rank.best{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff}
+  .tbl tr.row:hover{background:#1c1c1f}
+  .tbl tr.row.sel{background:#202024;box-shadow:inset 3px 0 0 var(--accent)}
+  .rank{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:7px;background:#27272a;color:var(--mut);font-weight:700;font-size:12px}
+  .rank.best{background:var(--accent);color:#fff}
   .vessel{font-weight:600}
   .legpath{color:var(--mut);font-size:11px;display:flex;gap:5px;align-items:center;flex-wrap:wrap;margin-top:2px}
   .hub{color:var(--amber)}
@@ -120,7 +121,7 @@
   .glegend .lg-note{color:var(--mut2);font-style:italic;white-space:normal;max-width:190px}
   .glegend svg{flex:none}
   /* timeline hover tooltip */
-  .gtip{position:fixed;z-index:80;display:none;max-width:340px;background:#0e1422;border:1px solid var(--line2);border-radius:12px;
+  .gtip{position:fixed;z-index:80;display:none;max-width:340px;background:#161619;border:1px solid var(--line2);border-radius:12px;
     box-shadow:0 14px 44px rgba(0,0,0,.6);padding:11px 13px;pointer-events:none;font-size:12px}
   .gtip .tt-h{font-weight:750;font-size:13px;margin-bottom:9px;display:flex;gap:7px;align-items:center;flex-wrap:wrap;line-height:1.3}
   .gtip .tt-g{display:grid;grid-template-columns:auto 1fr;gap:5px 14px}
@@ -135,7 +136,7 @@
   .pcard .top{padding:14px 15px 10px}
   .pcard .rt{font-size:15px;font-weight:750;display:flex;align-items:center;gap:7px}
   .pcard .nm{color:var(--mut);font-size:11px;margin-top:2px}
-  .riskbar{display:flex;height:7px;border-radius:4px;overflow:hidden;margin:11px 0 3px;background:#1f2740}
+  .riskbar{display:flex;height:7px;border-radius:4px;overflow:hidden;margin:11px 0 3px;background:#27272a}
   .riskbar i{display:block;height:100%}
   .pcard .reco{background:var(--panel2);border-top:1px solid var(--line);padding:11px 15px;display:grid;grid-template-columns:1fr 1fr;gap:8px 10px}
   .pcard .reco .mi{font-size:11px;color:var(--mut)}
@@ -158,7 +159,7 @@
 
   /* Prediction range bar */
   .pred .bar{position:relative;height:42px;margin:12px 0 6px;background:var(--panel);border:1px solid var(--line);border-radius:9px}
-  .pred .band{position:absolute;top:8px;bottom:8px;background:linear-gradient(90deg,rgba(91,155,255,.15),rgba(124,92,255,.35),rgba(91,155,255,.15));border-radius:6px}
+  .pred .band{position:absolute;top:8px;bottom:8px;background:rgba(59,130,246,.18);border:1px solid rgba(59,130,246,.35);border-radius:6px}
   .pred .p50{position:absolute;top:2px;bottom:2px;width:3px;background:var(--accent);border-radius:2px}
   .pred .sched{position:absolute;top:0;bottom:0;width:2px;background:var(--amber)}
   .pred .tick{position:absolute;top:100%;font-size:10px;color:var(--mut);transform:translateX(-50%);margin-top:3px;white-space:nowrap}
@@ -189,7 +190,7 @@
   .explain .e p{margin:0;color:var(--mut);font-size:12px}
 
   /* Map */
-  .mapwrap{position:relative;background:linear-gradient(180deg,#0d1424,#0a0f1b);border-radius:10px;overflow:hidden;border:1px solid var(--line)}
+  .mapwrap{position:relative;background:#0b0b0d;border-radius:10px;overflow:hidden;border:1px solid var(--line)}
   .maplabel{font-size:10px;fill:var(--mut)}
 
   /* Dropzone / empty */
@@ -226,8 +227,8 @@
   </header>
 
   <div class="views" id="viewSwitch" style="display:none">
-    <button data-v="portfolio">▦ Portfolio</button>
     <button data-v="lane">🚢 Lane detail</button>
+    <button data-v="portfolio">▦ Portfolio</button>
     <button data-v="deadlines">⏱ Deadlines <span class="cnt" id="dueCnt">0</span></button>
   </div>
 
@@ -261,7 +262,7 @@
 <script>
 "use strict";
 /* ---------------- state ---------------- */
-const state = { lanes: [], active: 0, view:'portfolio',
+const state = { lanes: [], active: 0, view:'lane',
   sort: {key:'score', dir:1}, filter:{risk:'all', noPred:true},
   dl:{lane:'all', window:'30', hidePast:true} };
 const NOW = new Date();   // live clock reference for all countdowns
@@ -596,7 +597,7 @@ function ganttCard(lane){
     </div>`;
   return card;
 }
-function riskLine(r){ return r==='RED'?'#fb7185':r==='GREEN'?'#34d399':'#9d8bff'; }
+function riskLine(r){ return r==='RED'?'#fb7185':r==='GREEN'?'#34d399':'#94a3b8'; }
 function predGradId(r){ return r==='RED'?'predRed':r==='GREEN'?'predGreen':'predUnk'; }
 function drawGantt(lane){
   const svg=$('#ganttSvg'); if(!svg) return;
@@ -673,7 +674,7 @@ function drawGantt(lane){
   const defs=`<defs>
     <linearGradient id="predGreen" x1="0" x2="1"><stop offset="0" stop-color="#34d399" stop-opacity=".1"/><stop offset=".5" stop-color="#34d399" stop-opacity=".5"/><stop offset="1" stop-color="#34d399" stop-opacity=".1"/></linearGradient>
     <linearGradient id="predRed" x1="0" x2="1"><stop offset="0" stop-color="#fb7185" stop-opacity=".12"/><stop offset=".5" stop-color="#fb7185" stop-opacity=".58"/><stop offset="1" stop-color="#fb7185" stop-opacity=".12"/></linearGradient>
-    <linearGradient id="predUnk" x1="0" x2="1"><stop offset="0" stop-color="#9d8bff" stop-opacity=".12"/><stop offset=".5" stop-color="#9d8bff" stop-opacity=".5"/><stop offset="1" stop-color="#9d8bff" stop-opacity=".12"/></linearGradient>
+    <linearGradient id="predUnk" x1="0" x2="1"><stop offset="0" stop-color="#94a3b8" stop-opacity=".12"/><stop offset=".5" stop-color="#94a3b8" stop-opacity=".5"/><stop offset="1" stop-color="#94a3b8" stop-opacity=".12"/></linearGradient>
   </defs>`;
   svg.innerHTML=defs+s;
   svg.querySelectorAll('[data-row]').forEach(r=>{

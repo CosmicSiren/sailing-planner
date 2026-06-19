@@ -128,6 +128,11 @@
   .gtip .tt-g >span{color:var(--mut)}
   .gtip .tt-g >b{text-align:right;font-weight:600;font-variant-numeric:tabular-nums}
   .gtip .tt-f{color:var(--mut2);margin-top:9px;font-size:11px;text-align:center;border-top:1px solid var(--line);padding-top:7px}
+  /* load confirmation toast */
+  .toasts{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);display:flex;flex-direction:column;gap:8px;z-index:90;align-items:center;pointer-events:none}
+  .toast{background:var(--panel2);border:1px solid var(--line2);border-left:3px solid var(--green);border-radius:10px;padding:11px 15px;font-size:13px;box-shadow:var(--shadow);max-width:520px;animation:tin .18s ease}
+  .toast.err{border-left-color:var(--red)}
+  @keyframes tin{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 
   /* Portfolio */
   .pcards{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
@@ -339,6 +344,11 @@ function bestOption(lane){
 }
 
 /* ---------------- file loading ---------------- */
+function toast(msg, kind){
+  let c=document.querySelector('.toasts'); if(!c){ c=el('div','toasts'); document.body.append(c); }
+  const t=el('div','toast'+(kind==='err'?' err':'')); t.innerHTML=(kind==='err'?'⚠ ':'✓ ')+msg; c.append(t);
+  setTimeout(()=>{ t.style.transition='opacity .3s'; t.style.opacity='0'; setTimeout(()=>t.remove(),300); }, kind==='err'?6000:4200);
+}
 function handleFiles(list){
   let done=0, added=0, lastIdx=-1; const errs=[];
   [...list].forEach(f=>{
@@ -359,7 +369,8 @@ function handleFiles(list){
         if(lastIdx>=0){ state.active=lastIdx; state.view='lane'; }
         else if(state.active>=state.lanes.length) state.active=Math.max(0,state.lanes.length-1);
         render();
-        if(errs.length) alert("Couldn't load:\n\n"+errs.join('\n'));
+        if(added>0){ const L=state.lanes[state.active]; toast(`Loaded <b>${esc(L.file)}</b> — ${L.options.length} sailings · ${esc(L.code)}`); }
+        if(errs.length){ toast("Couldn't load: "+esc(errs.join('; ')),'err'); }
       }
     };
     r.onerror=()=>{ errs.push(f.name+': could not read file'); if(++done===list.length){ render(); if(errs.length) alert("Couldn't load:\n\n"+errs.join('\n')); } };
